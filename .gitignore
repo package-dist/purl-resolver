@@ -8,6 +8,9 @@
 *.so
 *.dylib
 
+# CLI binary
+purl-resolver
+
 # Test binary, built with `go test -c`
 *.test
 
