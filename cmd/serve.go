@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"net/http"
 	"os"
-	"os/signal"
 	"time"
 
 	"github.com/spf13/cobra"
@@ -21,7 +20,7 @@ var serveCmd = &cobra.Command{
 	Long:  `Start the HTTP web server that provides the pURL resolver API endpoints.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		server := NewServer(port)
-		server.Start()
+		server.Start(cmd.Context())
 	},
 }
 
@@ -54,16 +53,12 @@ func (s *Server) healthzHandler(w http.ResponseWriter, r *http.Request) {
 	_, _ = w.Write([]byte("OK"))
 }
 
-func (s *Server) Start() {
+func (s *Server) Start(ctx context.Context) {
 	addr := fmt.Sprintf(":%d", s.port)
 	srv := &http.Server{
 		Addr:    addr,
 		Handler: s.mux,
 	}
-
-	// Channel to listen for interrupt signal
-	stop := make(chan os.Signal, 1)
-	signal.Notify(stop, os.Interrupt)
 
 	// Start server in a goroutine
 	go func() {
@@ -75,14 +70,14 @@ func (s *Server) Start() {
 	}()
 
 	// Wait for interrupt signal
-	<-stop
+	<-ctx.Done()
 	fmt.Println("\nShutting down server...")
 
 	// Create a deadline for shutdown
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
-	if err := srv.Shutdown(ctx); err != nil {
+	if err := srv.Shutdown(shutdownCtx); err != nil {
 		fmt.Printf("Server shutdown error: %v\n", err)
 		os.Exit(1)
 	}
