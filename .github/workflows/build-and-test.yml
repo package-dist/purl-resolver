@@ -32,7 +32,4 @@ jobs:
       run: go build -v -o purl-resolver .
 
     - name: Run unit tests with coverage
-      run: ginkgo -r --cover --coverprofile=coverage.out --race --randomize-all --trace
-
-    - name: Display coverage
-      run: go tool cover -func=coverage.out
+      run: make test-coverage

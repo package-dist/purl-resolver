@@ -5,6 +5,7 @@ go 1.24.12
 require (
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
+	github.com/package-url/packageurl-go v0.1.3
 	github.com/spf13/cobra v1.10.2
 )
 

@@ -1,6 +1,6 @@
 //go:build !integration
 
-package cmd
+package server
 
 import (
 	"testing"
@@ -9,7 +9,7 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestCmdUnit(t *testing.T) {
+func TestServer(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Cmd Unit Suite")
+	RunSpecs(t, "Server Suite")
 }

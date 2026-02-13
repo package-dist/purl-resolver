@@ -48,7 +48,7 @@ jobs:
 
     - name: Run integration tests
       run: |
-        PURL_RESOLVER_SERVICE_URL=http://localhost:8080 ginkgo -v --tags=integration --trace --fail-fast ./cmd
+        PURL_RESOLVER_SERVICE_URL=http://localhost:8080 make test-integration
 
     - name: Show logs on failure
       if: failure()
