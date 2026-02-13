@@ -1,4 +1,4 @@
-.PHONY: help test test-integration kind-create kind-delete ko-apply deploy-local port-forward test-local-full logs clean
+.PHONY: help test test-unit test-integration test-watch test-coverage test-coverage-html kind-create kind-delete ko-apply deploy-local port-forward test-local-full logs clean
 
 # Default target
 .DEFAULT_GOAL := help
@@ -14,10 +14,24 @@ help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
 test: ## Run unit tests
-	go test -v ./...
+	ginkgo -r --cover --race --randomize-all --trace
+
+test-unit: ## Run unit tests (alias for test)
+	$(MAKE) test
 
 test-integration: ## Run integration tests (requires service to be running)
-	go test -v -tags=integration ./cmd
+	ginkgo -v --tags=integration --trace ./cmd
+
+test-watch: ## Run unit tests in watch mode
+	ginkgo watch -r
+
+test-coverage: ## Run tests and show coverage report
+	ginkgo -r --cover --coverprofile=coverage.out
+	go tool cover -func=coverage.out
+
+test-coverage-html: ## Run tests and show HTML coverage report
+	ginkgo -r --cover --coverprofile=coverage.out
+	go tool cover -html=coverage.out
 
 kind-create: ## Create a KinD cluster
 	kind create cluster --name $(CLUSTER_NAME)
@@ -58,7 +72,7 @@ stop-port-forward: ## Stop background port forwarding
 
 test-local-full: deploy-local port-forward-bg ## Deploy and run full integration tests
 	@echo "Running integration tests..."
-	@PURL_RESOLVER_SERVICE_URL=http://localhost:$(LOCAL_PORT) go test -v -tags=integration ./cmd || ($(MAKE) stop-port-forward && exit 1)
+	@PURL_RESOLVER_SERVICE_URL=http://localhost:$(LOCAL_PORT) ginkgo -v --tags=integration --trace ./cmd || ($(MAKE) stop-port-forward && exit 1)
 	@$(MAKE) stop-port-forward
 	@echo "Integration tests passed!"
 

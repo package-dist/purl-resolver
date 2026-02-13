@@ -11,8 +11,14 @@ Service for resolving pURL identifiers to an OCI artifact
 go build -v -o purl-resolver .
 ./purl-resolver serve
 
-# Run tests
-go test -v ./...
+# Run tests with Ginkgo
+make test
+
+# Run tests in watch mode (re-runs on file changes)
+make test-watch
+
+# Run tests with coverage
+make test-coverage
 ```
 
 ### Container Development
@@ -74,6 +80,67 @@ Run `make help` to see all available targets:
 - `make test-local-full` - Full automated test (deploy + integration tests)
 - `make logs` - Show application logs
 - `make clean` - Clean up everything
+
+## Testing
+
+This project uses [Ginkgo v2](https://onsi.github.io/ginkgo/) (BDD test framework) and [Gomega](https://onsi.github.io/gomega/) (assertion library) for testing.
+
+### Running Tests
+
+```bash
+# Run unit tests
+make test
+
+# Run unit tests with coverage
+make test-coverage
+
+# View coverage in browser
+make test-coverage-html
+
+# Run tests in watch mode (re-runs on changes)
+make test-watch
+
+# Run integration tests (requires deployed service)
+make test-integration
+
+# Full integration test (deploy + test + cleanup)
+make test-local-full
+```
+
+### Using Ginkgo CLI
+
+```bash
+# Install Ginkgo CLI
+go install github.com/onsi/ginkgo/v2/ginkgo@latest
+
+# Run tests with verbose output
+ginkgo -v ./cmd
+
+# Run specific tests by pattern
+ginkgo -focus="Health Check" ./cmd
+
+# Skip specific tests
+ginkgo -skip="Integration" ./cmd
+
+# Run tests until failure (useful for flaky tests)
+ginkgo --until-it-fails ./cmd
+```
+
+### Test Organization
+
+- **Unit Tests** (`cmd/serve_ginkgo_test.go`)
+  - Package: `cmd` (white-box testing)
+  - Build tag: `!integration`
+  - Tests server initialization and HTTP handlers
+  - Uses `httptest` for request/response simulation
+
+- **Integration Tests** (`cmd/serve_integration_ginkgo_test.go`)
+  - Package: `cmd_test` (black-box testing)
+  - Build tag: `integration`
+  - Tests deployed service in Kubernetes
+  - Uses `Eventually()` for retry logic and `SpecContext` for timeout control
+
+See [CLAUDE.md](./CLAUDE.md) for detailed testing guidance and examples.
 
 ## Architecture
 
