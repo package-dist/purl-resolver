@@ -14,7 +14,7 @@ help: ## Display this help message
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "  %-20s %s\n", $$1, $$2}'
 
 test: ## Run unit tests
-	ginkgo -r --cover --race --randomize-all --trace
+	ginkgo -r --cover --race --randomize-all --trace ./server
 
 test-unit: ## Run unit tests (alias for test)
 	$(MAKE) test
@@ -23,14 +23,14 @@ test-integration: ## Run integration tests (requires service to be running)
 	ginkgo -v --tags=integration --trace ./cmd
 
 test-watch: ## Run unit tests in watch mode
-	ginkgo watch -r
+	ginkgo watch -r ./server
 
 test-coverage: ## Run tests and show coverage report
-	ginkgo -r --cover --coverprofile=coverage.out
+	ginkgo -r --cover --coverprofile=coverage.out ./server
 	go tool cover -func=coverage.out
 
 test-coverage-html: ## Run tests and show HTML coverage report
-	ginkgo -r --cover --coverprofile=coverage.out
+	ginkgo -r --cover --coverprofile=coverage.out ./server
 	go tool cover -html=coverage.out
 
 kind-create: ## Create a KinD cluster
