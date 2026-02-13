@@ -30,6 +30,9 @@ go.work.sum
 # env file
 .env
 
+# Makefile artifacts
+.port-forward.pid
+
 # Editor/IDE
 # .idea/
 # .vscode/

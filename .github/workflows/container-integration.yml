@@ -1,0 +1,54 @@
+name: Container Integration
+
+on:
+  push:
+    branches: [ main, containerize-with-ko ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  container-integration:
+    name: Container Integration Test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Go
+      uses: actions/setup-go@v5
+      with:
+        go-version: '1.24'
+
+    - name: Install ko
+      uses: ko-build/setup-ko@v0.9
+
+    - name: Create KinD cluster
+      uses: helm/kind-action@v1
+      with:
+        cluster_name: purl-resolver
+
+    - name: Build and deploy with ko
+      run: |
+        KIND_CLUSTER_NAME=purl-resolver KO_DOCKER_REPO=kind.local ko apply --platform=linux/amd64 -f deploy/
+
+    - name: Wait for deployment
+      run: |
+        kubectl wait --for=condition=available --timeout=120s deployment/purl-resolver
+
+    - name: Start port forward
+      run: |
+        kubectl port-forward service/purl-resolver 8080:80 > /dev/null 2>&1 &
+        sleep 3
+
+    - name: Run integration tests
+      run: |
+        PURL_RESOLVER_SERVICE_URL=http://localhost:8080 go test -v -tags=integration ./cmd
+
+    - name: Show logs on failure
+      if: failure()
+      run: |
+        kubectl get pods
+        kubectl logs -l app=purl-resolver --tail=100
