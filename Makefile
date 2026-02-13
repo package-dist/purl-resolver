@@ -20,7 +20,7 @@ test-unit: ## Run unit tests (alias for test)
 	$(MAKE) test
 
 test-integration: ## Run integration tests (requires service to be running)
-	ginkgo -v --tags=integration --trace ./cmd
+	ginkgo -v --tags=integration --trace --fail-fast ./cmd
 
 test-watch: ## Run unit tests in watch mode
 	ginkgo watch -r ./server
